@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>ToDo List</title>
+<link th:href="@{/css/style.css}"rel="stylesheet"
+type="text/css">
+</head>
+<body>
+	
+	<!--　検索欄　-->
+	
+<form th:action="@{/}"method="post"th:object="${todoQuery}">
+	<div style="display:flex">
+	<table border="1">
+		<tr>
+				<th>件名</th>
+			<th>重要度</th>
+			<th>緊急度</th>
+			<th>期限</th>
+			<th>完了</th>
+			</tr>
+			<tr>
+			<td>
+				<input type="text" size="40" th:field="*{title}">
+			</td>
+			<td>
+				<select th:field="*{importance}">
+					<option value="-1">-</option>
+					<option value="1">高</option>
+					<option value="0">低</option>
+				</select>
+			</td>
+			<td>
+				<select th:field="*{urgency}">
+					<option value="-1">-</option>
+					<option value="1">高</option>
+					<option value="0">低</option>
+				</select>
+			</td>
+			<td>
+				<input type="text" size="10" th:field="*{deadlineFrom}"
+					placeholder="yyyy-mm-dd">
+					～
+				<input type="text" size="10" th:field="*{deadlineTo}"
+					placeholder="yyyy-mm-dd">
+			</td>
+			<td>
+				<input type="checkbox" value="Y" th:field="*{done}">
+						          完了
+			</td>
+			</tr>
+	</table>
+	<button type="submit" th:formaction="@{/todo/query}">検索</button>
+	</div>
+	<div th:if="${#fields.hasErrors('deadlineFrom')}"
+	th:errors="*{deadlineFrom}" th:errorclass="red"></div>
+	<div th:if="${#fields.hasErrors('deadlineTo')}"
+		th:errors="*{deadlineTo}" th:errorclass="red"></div>
+		<hr>
+		<button type="submit" th:formaction="@{/todo/create/form}">
+		新規追加</button>
+</form>
+
+<!--Todo一覧表示-->
+
+<table border="1">
+	<tr>
+		<th>id</th>
+		<th>件名</th>
+	<th>重要度</th>
+	<th>緊急度</th>
+	<th>タスク</th>
+	<th>期限</th>
+	<th>完了</th>
+	</tr>
+	<tr th:each="todo:${todoList}">
+		<td th:text="${todo.id}"></td>
+		<td><a th:href="@{/todo/{id}(id=${todo.id})}"  th:text="${todo.title}"></a></td>
+		<td th:text="${todo.importance==1?'★★★':'★'}"></td>
+		<td th:text="${todo.urgency==1?'★★★':'★'}"></td>
+		<td th:text="${#lists.size(todo.taskList)} "style=
+					"text-align:center"></td>
+		<td th:text="${todo.deadline}"></td>
+		<td th:text="${todo.done=='Y'?'	完了':''}"></td>
+		</tr>
+</table>
+
+<!--ページリスト-->
+
+<div th:if="${todoList!=null && #lists.size(todoList)!=0}">
+	<span th:text="|${todoPage.getNumber()+1}/
+	${todoPage.getTotalPages()}ページを表示中|"></span>
+	<ul id="nav">
+		<li>
+			<span th:if="${todoPage.isFirst()}">←前</span>
+			<a th:unless="${todoPage.isFirst()}" 
+			th:href="@{/todo/query(page=${todoPage.getNumber()-1})}">
+			←前</a>
+		</li>
+		<li th:each="i:${#numbers.sequence
+			(todoPage.getNumber()-2<0 ? 0:todoPage.getNumber()-2
+			,todoPage.getNumber()+2>todoPage.getTotalPages()-1 ? 
+			todoPage.getTotalPages()-1:todoPage.getNumber()+2)}">
+			<span th:if="${i==todoPage.getNumber()}" th:text="${i+1}"></span>
+			<a th:if="${i!=todoPage.getNumber()}"
+			 th:href="@{/todo/query(page=${i})}" th:text="${i+1}"></a>
+		</li>
+		<li>
+			<span th:if="${todoPage.isLast()}">→次</span>
+			<a th:unless="${todoPage.isLast()}" 
+		 th:href="@{/todo/query(page=${todoPage.getNumber()+1})}">
+		 →次</a>
+		 
+		</li>
+	</ul>
+</div>
+
+</body>
+</html>
